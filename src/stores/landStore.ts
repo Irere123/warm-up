@@ -115,7 +115,7 @@ export const useLandStore = defineStore('land', () => {
     error.value = null
 
     try {
-      const { error: deleteError } = await supabase.from('land').delete().eq('id', id)
+      const { error: deleteError } = await supabase.from('Land').delete().eq('id', id)
 
       if (deleteError) {
         throw new Error(deleteError.message)

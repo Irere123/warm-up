@@ -12,7 +12,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
-import { Trash2, Eye } from 'lucide-vue-next'
+import { Trash2 } from 'lucide-vue-next'
 
 const landStore = useLandStore()
 
@@ -40,10 +40,6 @@ const formatDate = (dateString: string) => {
     month: 'long',
     day: 'numeric',
   })
-}
-
-const viewDocument = (documentUrl: string) => {
-  window.open(documentUrl, '_blank')
 }
 </script>
 
@@ -81,9 +77,6 @@ const viewDocument = (documentUrl: string) => {
           </TableCell>
           <TableCell class="text-right">
             <div class="flex items-center justify-end gap-2">
-              <Button variant="outline" size="sm" @click="viewDocument(land.supporting_documents)">
-                <Eye class="h-4 w-4" />
-              </Button>
               <Button
                 variant="outline"
                 size="sm"
