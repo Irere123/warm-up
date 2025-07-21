@@ -40,11 +40,9 @@ const formSchema = toTypedSchema(
           {
             message: 'File must be PDF, JPG, JPEG, or PNG format',
           },
-        )
-        .optional(),
-      ownership_proof_url: z.string().url({ message: 'Please provide a valid URL' }).optional(),
+        ),
     })
-    .refine((data) => data.ownership_proof || data.ownership_proof_url, {
+    .refine((data) => data.ownership_proof, {
       message: 'Please provide either a file upload or a document URL',
       path: ['ownership_proof'],
     }),
@@ -58,12 +56,7 @@ const { mutate, isPending, error } = useLandRegistration()
 
 const onSubmit = handleSubmit(async (values) => {
   try {
-    // Convert file to data URL
-    let ownershipProofUrl = values.ownership_proof_url || ''
-
-    if (values.ownership_proof && !ownershipProofUrl) {
-      ownershipProofUrl = await fileToDataUrl(values.ownership_proof)
-    }
+    const ownershipProofUrl = await fileToDataUrl(values.ownership_proof)
 
     const formData = {
       parcel_id: values.parcel_id,
@@ -87,8 +80,6 @@ const handleFileChange = (event: Event) => {
   const target = event.target as HTMLInputElement
   if (target.files && target.files.length > 0) {
     setFieldValue('ownership_proof', target.files[0])
-    // Clear the URL field when a file is selected
-    setFieldValue('ownership_proof_url', '')
   }
 }
 
@@ -177,26 +168,6 @@ defineExpose({
             </FormControl>
             <p class="text-sm text-muted-foreground mt-1">
               Upload PDF, JPG, JPEG, or PNG files (max 10MB)
-            </p>
-            <FormMessage />
-          </FormItem>
-        </FormField>
-
-        <div class="text-center text-sm text-muted-foreground">OR</div>
-
-        <FormField v-slot="{ componentField }" name="ownership_proof_url">
-          <FormItem>
-            <FormLabel>Option 2: Document URL</FormLabel>
-            <FormControl>
-              <Input
-                type="url"
-                placeholder="https://example.com/document.pdf"
-                v-bind="componentField"
-                @input="handleUrlChange"
-              />
-            </FormControl>
-            <p class="text-sm text-muted-foreground mt-1">
-              Provide a direct link to your ownership proof document
             </p>
             <FormMessage />
           </FormItem>

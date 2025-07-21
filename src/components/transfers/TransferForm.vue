@@ -132,7 +132,6 @@ defineExpose({
 
         <FormField name="contract">
           <FormItem>
-            <FormLabel>Option 1: Upload File</FormLabel>
             <FormControl>
               <Input
                 type="file"
