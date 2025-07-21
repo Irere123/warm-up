@@ -3,7 +3,7 @@ import { useLandStore } from '@/stores/landStore'
 import type { LandInsert } from '@/types'
 
 export type RegistrationData = Omit<LandInsert, 'supporting_documents' | 'status'> & {
-  ownership_proof: File
+  ownership_proof_url: string
 }
 
 export const useLandRegistration = () => {

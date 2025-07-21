@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { Plus, X } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import {
@@ -17,6 +17,7 @@ import TransferList from '@/components/transfers/TransferList.vue'
 
 const isTransferDialogOpen = ref(false)
 const dialogError = ref<string | null>(null)
+const formRef = ref<InstanceType<typeof TransferForm> | null>(null)
 
 const handleFormSuccess = () => {
   isTransferDialogOpen.value = false
@@ -26,6 +27,17 @@ const handleFormSuccess = () => {
 const handleFormError = (message: string) => {
   dialogError.value = message
 }
+
+watch(isTransferDialogOpen, (isOpen) => {
+  if (!isOpen) {
+    dialogError.value = null
+    setTimeout(() => {
+      if (formRef.value && typeof formRef.value.resetForm === 'function') {
+        formRef.value.resetForm()
+      }
+    }, 100)
+  }
+})
 </script>
 
 <template>
@@ -56,7 +68,7 @@ const handleFormError = (message: string) => {
             </AlertDescription>
           </Alert>
 
-          <TransferForm @success="handleFormSuccess" @error="handleFormError" />
+          <TransferForm ref="formRef" @success="handleFormSuccess" @error="handleFormError" />
         </DialogContent>
       </Dialog>
     </div>

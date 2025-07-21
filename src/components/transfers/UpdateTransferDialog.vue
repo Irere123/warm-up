@@ -25,7 +25,6 @@ const props = defineProps<{
 
 const emit = defineEmits(['update:open'])
 
-// Use a computed property to sync the dialog's open state with the parent
 const internalOpen = computed({
   get: () => props.open,
   set: (value) => emit('update:open', value),
@@ -35,7 +34,6 @@ const formSchema = toTypedSchema(
   z.object({
     recipient_id: z.string().min(10, 'Recipient ID is required'),
     parcel_id: z.string().min(5, 'Parcel ID must be at least 5 characters'),
-    // Contract is optional on update
     contract: z.union([z.instanceof(File), z.string()]).optional(),
   }),
 )
@@ -46,7 +44,6 @@ const { handleSubmit, setFieldValue, resetForm, setValues } = useForm({
 
 const { mutate: updateTransfer, isPending } = useUpdateLandTransfer()
 
-// Watch for changes in the transfer prop to pre-fill the form
 watch(
   () => props.transfer,
   (newTransfer) => {
@@ -54,7 +51,7 @@ watch(
       setValues({
         recipient_id: newTransfer.recipient_id,
         parcel_id: newTransfer.parcel_id,
-        contract: newTransfer.contract_url, // Keep track of the existing URL
+        contract: newTransfer.contract_url,
       })
     } else {
       resetForm()

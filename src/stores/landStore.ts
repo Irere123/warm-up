@@ -12,17 +12,17 @@ export const useLandStore = defineStore('land', () => {
 
   // Getters
   const landCount = computed(() => lands.value.length)
-  const pendingLands = computed(() => lands.value.filter(land => land.status === 'pending'))
-  const approvedLands = computed(() => lands.value.filter(land => land.status === 'approved'))
+  const pendingLands = computed(() => lands.value.filter((land) => land.status === 'pending'))
+  const approvedLands = computed(() => lands.value.filter((land) => land.status === 'approved'))
 
   // Actions
   const fetchLands = async () => {
     loading.value = true
     error.value = null
-    
+
     try {
       const { data, error: fetchError } = await supabase
-        .from('land')
+        .from('Land')
         .select('*')
         .order('created_at', { ascending: false })
 
@@ -39,56 +39,34 @@ export const useLandStore = defineStore('land', () => {
     }
   }
 
-  const addLand = async (landData: Omit<LandInsert, 'supporting_documents' | 'status'> & { ownership_proof: File }) => {
+  const addLand = async (
+    landData: Omit<LandInsert, 'supporting_documents' | 'status'> & { ownership_proof_url: string },
+  ) => {
     loading.value = true
     error.value = null
 
     try {
-      // 1. Upload the ownership proof file
-      const file = landData.ownership_proof
-      const fileExt = file.name.split('.').pop()
-      const filePath = `land-documents/${Date.now()}.${fileExt}`
-
-      const { error: uploadError } = await supabase.storage
-        .from('documents')
-        .upload(filePath, file)
-
-      if (uploadError) {
-        throw new Error(`File upload failed: ${uploadError.message}`)
-      }
-
-      // 2. Get the public URL of the uploaded file
-      const { data: urlData } = supabase.storage
-        .from('documents')
-        .getPublicUrl(filePath)
-
-      if (!urlData) {
-        throw new Error('Could not get public URL for the document.')
-      }
-
-      // 3. Insert the land record into the database
+      // Insert the land record into the database with the provided URL
       const { data, error: dbError } = await supabase
-        .from('land')
+        .from('Land')
         .insert({
           parcel_id: landData.parcel_id,
           size: landData.size,
           ownership_type: landData.ownership_type,
-          supporting_documents: urlData.publicUrl,
-          status: 'pending'
+          supporting_documents: landData.ownership_proof_url,
+          statusa: 'pending',
         })
         .select()
         .single()
 
       if (dbError) {
-        // Attempt to delete the uploaded file if DB insert fails
-        await supabase.storage.from('documents').remove([filePath])
         throw new Error(`Database error: ${dbError.message}`)
       }
 
       // Add to local state
       lands.value.unshift(data)
       toast.success('Land registration submitted successfully!')
-      
+
       return data
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to register land'
@@ -105,8 +83,8 @@ export const useLandStore = defineStore('land', () => {
 
     try {
       const { data, error: updateError } = await supabase
-        .from('land')
-        .update({ status })
+        .from('Land')
+        .update({ statusa: status })
         .eq('id', id)
         .select()
         .single()
@@ -116,7 +94,7 @@ export const useLandStore = defineStore('land', () => {
       }
 
       // Update local state
-      const index = lands.value.findIndex(land => land.id === id)
+      const index = lands.value.findIndex((land) => land.id === id)
       if (index !== -1) {
         lands.value[index] = data
       }
@@ -137,17 +115,14 @@ export const useLandStore = defineStore('land', () => {
     error.value = null
 
     try {
-      const { error: deleteError } = await supabase
-        .from('land')
-        .delete()
-        .eq('id', id)
+      const { error: deleteError } = await supabase.from('land').delete().eq('id', id)
 
       if (deleteError) {
         throw new Error(deleteError.message)
       }
 
       // Remove from local state
-      lands.value = lands.value.filter(land => land.id !== id)
+      lands.value = lands.value.filter((land) => land.id !== id)
       toast.success('Land record deleted successfully!')
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to delete land record'
@@ -176,6 +151,6 @@ export const useLandStore = defineStore('land', () => {
     addLand,
     updateLandStatus,
     deleteLand,
-    clearError
+    clearError,
   }
 })

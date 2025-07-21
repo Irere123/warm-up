@@ -4,7 +4,7 @@ import type { LandTransfer } from '@/types'
 
 const fetchLandTransfers = async () => {
   const { data, error } = await supabase
-    .from('land_transfers')
+    .from('transfers')
     .select()
     .order('created_at', { ascending: false })
 

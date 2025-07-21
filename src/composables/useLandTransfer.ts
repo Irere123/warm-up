@@ -3,7 +3,7 @@ import { useTransferStore } from '@/stores/transferStore'
 import type { TransferInsert } from '@/types'
 
 export type TransferData = Omit<TransferInsert, 'contract_document' | 'status'> & {
-  contract: File
+  contract_url: string
 }
 
 export const useLandTransfer = () => {

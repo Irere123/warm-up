@@ -30,7 +30,7 @@ const updateLandTransfer = async (formData: UpdateTransferData) => {
   }
 
   const { error: dbError } = await supabase
-    .from('land_transfers')
+    .from('transfers')
     .update({
       recipient_id: formData.recipient_id,
       parcel_id: formData.parcel_id,

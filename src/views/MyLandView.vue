@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { Plus, X } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import {
@@ -17,6 +17,7 @@ import RegistrationList from '@/components/land/RegistrationList.vue'
 
 const isRegistrationDialogOpen = ref(false)
 const dialogError = ref<string | null>(null)
+const formRef = ref<InstanceType<typeof LandRegistrationForm> | null>(null)
 
 const handleFormSuccess = () => {
   isRegistrationDialogOpen.value = false
@@ -26,6 +27,17 @@ const handleFormSuccess = () => {
 const handleFormError = (message: string) => {
   dialogError.value = message
 }
+
+watch(isRegistrationDialogOpen, (isOpen) => {
+  if (!isOpen) {
+    dialogError.value = null
+    setTimeout(() => {
+      if (formRef.value && typeof formRef.value.resetForm === 'function') {
+        formRef.value.resetForm()
+      }
+    }, 100)
+  }
+})
 </script>
 
 <template>
@@ -56,7 +68,11 @@ const handleFormError = (message: string) => {
             </AlertDescription>
           </Alert>
 
-          <LandRegistrationForm @success="handleFormSuccess" @error="handleFormError" />
+          <LandRegistrationForm
+            ref="formRef"
+            @success="handleFormSuccess"
+            @error="handleFormError"
+          />
         </DialogContent>
       </Dialog>
     </div>
