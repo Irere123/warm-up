@@ -112,6 +112,39 @@ export const useTransferStore = defineStore('transfer', () => {
     }
   }
 
+  const updateTransfer = async (id: number, updateData: { recipient_name?: string; parcel_id?: string; status?: string }) => {
+    loading.value = true
+    error.value = null
+
+    try {
+      const { data, error: updateError } = await supabase
+        .from('transfers')
+        .update(updateData)
+        .eq('id', id)
+        .select()
+        .single()
+
+      if (updateError) {
+        throw new Error(updateError.message)
+      }
+
+      // Update local state
+      const index = transfers.value.findIndex((transfer) => transfer.id === id)
+      if (index !== -1) {
+        transfers.value[index] = data
+      }
+
+      toast.success('Transfer updated successfully!')
+      return data
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Failed to update transfer'
+      toast.error(`Update failed: ${error.value}`)
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
   const deleteTransfer = async (id: number) => {
     loading.value = true
     error.value = null
@@ -152,6 +185,7 @@ export const useTransferStore = defineStore('transfer', () => {
     fetchTransfers,
     addTransfer,
     updateTransferStatus,
+    updateTransfer,
     deleteTransfer,
     clearError,
   }

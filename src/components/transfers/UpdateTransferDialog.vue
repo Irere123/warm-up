@@ -3,8 +3,8 @@ import { ref, watch, computed } from 'vue'
 import { useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
 import * as z from 'zod'
-import { useUpdateLandTransfer } from '@/composables/useUpdateLandTransfer'
-import type { LandTransfer } from '@/types'
+import { useTransferStore } from '@/stores/transferStore'
+import type { Transfer } from '@/types'
 
 import { Button } from '@/components/ui/button'
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
@@ -20,7 +20,7 @@ import {
 
 const props = defineProps<{
   open: boolean
-  transfer: LandTransfer | null
+  transfer: Transfer | null
 }>()
 
 const emit = defineEmits(['update:open'])
@@ -32,26 +32,27 @@ const internalOpen = computed({
 
 const formSchema = toTypedSchema(
   z.object({
-    recipient_id: z.string().min(10, 'Recipient ID is required'),
+    recipient_name: z.string().min(2, 'Recipient name is required'),
     parcel_id: z.string().min(5, 'Parcel ID must be at least 5 characters'),
-    contract: z.union([z.instanceof(File), z.string()]).optional(),
+    status: z.enum(['pending', 'completed', 'cancelled']),
   }),
 )
 
-const { handleSubmit, setFieldValue, resetForm, setValues } = useForm({
+const { handleSubmit, resetForm, setValues } = useForm({
   validationSchema: formSchema,
 })
 
-const { mutate: updateTransfer, isPending } = useUpdateLandTransfer()
+const transferStore = useTransferStore()
+const isLoading = ref(false)
 
 watch(
   () => props.transfer,
   (newTransfer) => {
     if (newTransfer) {
       setValues({
-        recipient_id: newTransfer.recipient_id,
+        recipient_name: newTransfer.recipient_name,
         parcel_id: newTransfer.parcel_id,
-        contract: newTransfer.contract_url,
+        status: newTransfer.status as 'pending' | 'completed' | 'cancelled',
       })
     } else {
       resetForm()
@@ -59,25 +60,25 @@ watch(
   },
 )
 
-const onSubmit = handleSubmit((values) => {
+const onSubmit = handleSubmit(async (values) => {
   if (!props.transfer) return
 
-  updateTransfer(
-    { ...values, id: props.transfer.id },
-    {
-      onSuccess: () => {
-        emit('update:open', false)
-      },
-    },
-  )
+  try {
+    isLoading.value = true
+    await transferStore.updateTransfer(props.transfer.id, {
+      recipient_name: values.recipient_name,
+      parcel_id: values.parcel_id,
+      status: values.status,
+    })
+    emit('update:open', false)
+  } catch (error) {
+    console.error('Update failed:', error)
+  } finally {
+    isLoading.value = false
+  }
 })
 
-const handleFileChange = (event: Event) => {
-  const target = event.target as HTMLInputElement
-  if (target.files && target.files.length > 0) {
-    setFieldValue('contract', target.files[0])
-  }
-}
+
 </script>
 
 <template>
@@ -87,9 +88,9 @@ const handleFileChange = (event: Event) => {
         <DialogTitle>Edit Land Transfer</DialogTitle>
       </DialogHeader>
       <form class="space-y-6 py-4" @submit.prevent="onSubmit">
-        <FormField v-slot="{ componentField }" name="recipient_id">
+        <FormField v-slot="{ componentField }" name="recipient_name">
           <FormItem>
-            <FormLabel>Recipient National ID</FormLabel>
+            <FormLabel>Recipient Name</FormLabel>
             <FormControl>
               <Input type="text" v-bind="componentField" />
             </FormControl>
@@ -107,11 +108,15 @@ const handleFileChange = (event: Event) => {
           </FormItem>
         </FormField>
 
-        <FormField name="contract">
+        <FormField v-slot="{ componentField }" name="status">
           <FormItem>
-            <FormLabel>Update Signed Contract (Optional)</FormLabel>
+            <FormLabel>Status</FormLabel>
             <FormControl>
-              <Input type="file" @change="handleFileChange" accept="image/*,application/pdf" />
+              <select v-bind="componentField" class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                <option value="pending">Pending</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -121,8 +126,8 @@ const handleFileChange = (event: Event) => {
           <DialogClose as-child>
             <Button type="button" variant="secondary">Cancel</Button>
           </DialogClose>
-          <Button type="submit" :disabled="isPending">
-            <span v-if="isPending">Saving...</span>
+          <Button type="submit" :disabled="isLoading">
+            <span v-if="isLoading">Saving...</span>
             <span v-else>Save Changes</span>
           </Button>
         </DialogFooter>

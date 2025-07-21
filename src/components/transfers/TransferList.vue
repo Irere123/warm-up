@@ -19,7 +19,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { MoreHorizontal } from 'lucide-vue-next'
-import ConfirmDialog from '@/components/shared/ConfirmDialog.vue'
+
 import UpdateTransferDialog from './UpdateTransferDialog.vue'
 
 const transferStore = useTransferStore()
@@ -27,9 +27,6 @@ const transferStore = useTransferStore()
 onMounted(() => {
   transferStore.fetchTransfers()
 })
-
-const isConfirmDialogOpen = ref(false)
-const transferIdToDelete = ref<string | null>(null)
 
 const isUpdateDialogOpen = ref(false)
 const selectedTransfer = ref<any | null>(null)
@@ -64,21 +61,12 @@ const handleUpdate = (transfer: any) => {
   isUpdateDialogOpen.value = true
 }
 
-const handleDelete = (id: number) => {
-  transferIdToDelete.value = id.toString()
-  isConfirmDialogOpen.value = true
-}
-
-const confirmDelete = () => {
-  if (transferIdToDelete.value) {
-    transferStore.deleteTransfer(parseInt(transferIdToDelete.value))
+const handleDelete = async (id: number) => {
+  try {
+    await transferStore.deleteTransfer(id)
+  } catch (error) {
+    console.error('Delete failed:', error)
   }
-  closeDialog()
-}
-
-const closeDialog = () => {
-  isConfirmDialogOpen.value = false
-  transferIdToDelete.value = null
 }
 </script>
 
@@ -135,14 +123,6 @@ const closeDialog = () => {
     <div v-else class="p-6 text-center text-muted-foreground">
       <p>No land transfers have been initiated yet.</p>
     </div>
-
-    <ConfirmDialog
-      :open="isConfirmDialogOpen"
-      title="Are you sure?"
-      description="This action cannot be undone. This will permanently delete the transfer record."
-      @confirm="confirmDelete"
-      @cancel="closeDialog"
-    />
 
     <UpdateTransferDialog v-model:open="isUpdateDialogOpen" :transfer="selectedTransfer" />
   </div>
