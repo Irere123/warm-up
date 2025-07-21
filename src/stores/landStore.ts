@@ -54,7 +54,7 @@ export const useLandStore = defineStore('land', () => {
           size: landData.size,
           ownership_type: landData.ownership_type,
           supporting_documents: landData.ownership_proof_url,
-          statusa: 'pending',
+          status: 'pending',
         })
         .select()
         .single()

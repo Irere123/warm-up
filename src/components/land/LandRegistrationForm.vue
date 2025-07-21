@@ -171,7 +171,6 @@ defineExpose({
 
         <FormField v-slot="{ componentField }" name="ownership_proof">
           <FormItem>
-            <FormLabel>Option 1: Upload File</FormLabel>
             <FormControl>
               <Input
                 ref="fileInput"
