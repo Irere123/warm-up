@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
-import { Toaster } from 'vue-sonner'
 import AppLayout from './layouts/AppLayout.vue'
+import { Toaster } from '@/components/ui/sonner'
+import 'vue-sonner/style.css'
 </script>
 
 <template>
-  <Toaster />
+  <Toaster position="bottom-right" theme="light" :close-button="true" />
   <AppLayout>
     <RouterView />
   </AppLayout>

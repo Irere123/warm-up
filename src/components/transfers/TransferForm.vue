@@ -11,7 +11,6 @@ import { Input } from '@/components/ui/input'
 
 const emit = defineEmits<{
   success: []
-  error: [message: string]
 }>()
 
 const fileInput = ref<HTMLInputElement | null>(null)
@@ -67,12 +66,9 @@ const onSubmit = handleSubmit(async (values) => {
         resetForm()
         emit('success')
       },
-      onError: (error) => {
-        emit('error', error.message)
-      },
     })
   } catch (error) {
-    emit('error', error instanceof Error ? error.message : 'Failed to process file')
+    console.error('Form submission error:', error)
   }
 })
 

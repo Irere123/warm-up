@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useLandTransfers } from '@/composables/useLandTransfers'
-import { useDeleteLandTransfer } from '@/composables/useDeleteLandTransfer'
+import { ref, computed, onMounted } from 'vue'
+import { useTransferStore } from '@/stores/transferStore'
 import {
   Table,
   TableBody,
@@ -19,11 +18,15 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { MoreHorizontal } from 'lucide-vue-next'
 import ConfirmDialog from '@/components/shared/ConfirmDialog.vue'
 import UpdateTransferDialog from './UpdateTransferDialog.vue'
 
-const { data: transfers, isLoading, isError, error } = useLandTransfers()
-const { mutate: deleteTransfer } = useDeleteLandTransfer()
+const transferStore = useTransferStore()
+
+onMounted(() => {
+  transferStore.fetchTransfers()
+})
 
 const isConfirmDialogOpen = ref(false)
 const transferIdToDelete = ref<string | null>(null)
@@ -61,14 +64,14 @@ const handleUpdate = (transfer: any) => {
   isUpdateDialogOpen.value = true
 }
 
-const handleDelete = (id: string) => {
-  transferIdToDelete.value = id
+const handleDelete = (id: number) => {
+  transferIdToDelete.value = id.toString()
   isConfirmDialogOpen.value = true
 }
 
 const confirmDelete = () => {
   if (transferIdToDelete.value) {
-    deleteTransfer(transferIdToDelete.value)
+    transferStore.deleteTransfer(parseInt(transferIdToDelete.value))
   }
   closeDialog()
 }
@@ -81,28 +84,28 @@ const closeDialog = () => {
 
 <template>
   <div class="mt-6 border rounded-lg">
-    <div v-if="isLoading" class="p-4 space-y-4">
+    <div v-if="transferStore.loading" class="p-4 space-y-4">
       <Skeleton class="h-8 w-full" v-for="n in 3" :key="n" />
     </div>
 
-    <div v-else-if="isError" class="p-4 text-red-500">
-      <p>Error fetching transfers: {{ error?.message }}</p>
+    <div v-else-if="transferStore.error" class="p-4 text-red-500">
+      <p>Error fetching transfers: {{ transferStore.error }}</p>
     </div>
 
-    <Table v-else-if="transfers && transfers.length">
+    <Table v-else-if="transferStore.transfers.length > 0">
       <TableHeader>
         <TableRow>
           <TableHead>Parcel ID</TableHead>
-          <TableHead>Recipient ID</TableHead>
+          <TableHead>Recipient Name</TableHead>
           <TableHead>Status</TableHead>
           <TableHead>Date Initiated</TableHead>
           <TableHead class="text-right">Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
-        <TableRow v-for="transfer in transfers" :key="transfer.id">
+        <TableRow v-for="transfer in transferStore.transfers" :key="transfer.id">
           <TableCell class="font-medium">{{ transfer.parcel_id }}</TableCell>
-          <TableCell>{{ transfer.recipient_id }}</TableCell>
+          <TableCell>{{ transfer.recipient_name }}</TableCell>
           <TableCell>
             <Badge :variant="statusVariant(transfer.status)">
               {{ transfer.status.replace('_', ' ') }}
@@ -114,7 +117,7 @@ const closeDialog = () => {
               <DropdownMenuTrigger as-child>
                 <Button variant="ghost" class="w-8 h-8 p-0">
                   <span class="sr-only">Open menu</span>
-                  <i class="i-lucide-more-horizontal" />
+                  <MoreHorizontal class="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
