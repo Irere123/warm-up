@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { Building2, FileText, Home, MapPin, Users } from 'lucide-vue-next'
+import { Building2, FileText, Home, MapIcon } from 'lucide-vue-next'
 
-import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import NavUser from '@/components/NavUser.vue'
 import {
@@ -43,6 +42,12 @@ const data = {
       url: '/transfers',
       icon: FileText,
       routeName: 'transfers',
+    },
+    {
+      title: 'Map',
+      url: '/map',
+      icon: MapIcon,
+      routeName: 'map',
     },
   ],
 }

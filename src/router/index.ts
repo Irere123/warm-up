@@ -18,6 +18,12 @@ const router = createRouter({
       // Lazy load this component
       component: () => import('../views/TransfersView.vue'),
     },
+    {
+      path: '/map',
+      name: 'map',
+      // Lazy load this component
+      component: () => import('../views/MapView.vue'),
+    },
   ],
 })
 
