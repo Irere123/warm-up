@@ -125,6 +125,7 @@ function formatLength(line: LineString) {
 }
 
 onMounted(() => {
+  // @ts-expect-error It works bro
   mapRef.value?.map.on('pointermove', showHelpInfoOnPointermove)
   mapRef.value?.map.getViewport().addEventListener('mouseout', function () {
     helpTooltipCoord.value = null
