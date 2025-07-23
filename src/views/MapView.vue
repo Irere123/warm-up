@@ -5,7 +5,7 @@
     :loadTilesWhileInteracting="true"
     style="height: 100%"
   >
-    <ol-view ref="view" :center="[-11000000, 4600000]" :zoom="5" />
+    <ol-view ref="view" :center="center" :zoom="zoom" :projection="projection" />
 
     <ol-tile-layer>
       <ol-source-osm />
@@ -48,11 +48,28 @@
         </ol-style-circle>
       </ol-style>
     </ol-vector-layer>
+
+    <ol-geolocation :projection="projection" @change:position="geoLocChange">
+      <template>
+        <ol-vector-layer :zIndex="2">
+          <ol-source-vector>
+            <ol-feature ref="positionFeature">
+              <ol-geom-point :coordinates="position"></ol-geom-point>
+              <!-- <ol-style>
+                <ol-style-icon :src="" :scale="0.1"></ol-style-icon>
+              </ol-style> -->
+            </ol-feature>
+          </ol-source-vector>
+        </ol-vector-layer>
+      </template>
+    </ol-geolocation>
+    <ol-fullscreen-control />
+    <ol-scaleline-control :bar="showAsBar" />
   </ol-map>
 </template>
 
 <script setup lang="ts">
-import { Feature, Map, type MapBrowserEvent } from 'ol'
+import { Feature, Map, View, type MapBrowserEvent } from 'ol'
 import { LineString } from 'ol/geom'
 import { type DrawEvent } from 'ol/interaction/Draw'
 import { onMounted, ref } from 'vue'
@@ -60,6 +77,7 @@ import { getLength } from 'ol/sphere'
 import type { EventsKey } from 'ol/events'
 import type { Coordinate } from 'ol/coordinate'
 import { unByKey } from 'ol/Observable'
+import type { ObjectEvent } from 'ol/Object'
 
 const mapRef = ref<{ map: Map } | null>(null)
 const drawType = ref('LineString')
@@ -69,6 +87,13 @@ const tooltipCoord = ref<Coordinate | null>(null)
 const tooltipText = ref('')
 const helpTooltipCoord = ref<Coordinate | null>(null)
 const helpTooltipText = ref('')
+
+const center = ref([40, 40])
+const projection = ref('EPSG:4326')
+const zoom = ref(12)
+const view = ref<View>()
+const position = ref([])
+const showAsBar = ref(false)
 
 let listener: EventsKey
 const continueLineMsg = 'Click to continue drawing the line'
@@ -122,6 +147,12 @@ function formatLength(line: LineString) {
     output = Math.round(length * 100) / 100 + ' ' + 'm'
   }
   return output
+}
+
+const geoLocChange = (event: ObjectEvent) => {
+  console.log('AAAAA', event)
+  position.value = event.target.getPosition()
+  view.value?.setCenter(event.target?.getPosition())
 }
 
 onMounted(() => {
