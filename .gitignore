@@ -31,3 +31,6 @@ coverage
 !.env.example
 
 *.tsbuildinfo
+
+*storybook.log
+storybook-static
