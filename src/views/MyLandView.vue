@@ -12,9 +12,11 @@ import {
 } from '@/components/ui/dialog'
 import LandRegistrationForm from '@/components/land/LandRegistrationForm.vue'
 import RegistrationList from '@/components/land/RegistrationList.vue'
+import { useI18n } from 'vue-i18n'
 
 const isRegistrationDialogOpen = ref(false)
 const formRef = ref<InstanceType<typeof LandRegistrationForm> | null>(null)
+const { t } = useI18n()
 
 const handleFormSuccess = () => {
   isRegistrationDialogOpen.value = false
@@ -38,7 +40,7 @@ watch(isRegistrationDialogOpen, (isOpen) => {
         <DialogTrigger as-child>
           <Button>
             <Plus class="mr-2 h-4 w-4" />
-            Register New Land
+            {{ t('buttons.register_land') }}
           </Button>
         </DialogTrigger>
         <DialogContent class="max-w-2xl">
@@ -49,18 +51,13 @@ watch(isRegistrationDialogOpen, (isOpen) => {
             </DialogDescription>
           </DialogHeader>
 
-
-
-          <LandRegistrationForm
-            ref="formRef"
-            @success="handleFormSuccess"
-          />
+          <LandRegistrationForm ref="formRef" @success="handleFormSuccess" />
         </DialogContent>
       </Dialog>
     </div>
 
     <div>
-      <h2 class="text-xl font-semibold text-gray-900 mb-4">My Registrations</h2>
+      <h2 class="text-xl font-semibold text-gray-900 mb-4">{{ t('titles.my_reg') }}</h2>
       <RegistrationList />
     </div>
   </div>

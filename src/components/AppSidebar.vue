@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { Building2, FileText, Home, MapIcon } from 'lucide-vue-next'
 
 import { useRoute, useRouter } from 'vue-router'
@@ -15,6 +16,7 @@ import {
   SidebarMenuItem,
   type SidebarProps,
 } from '@/components/ui/sidebar'
+import { useI18n } from 'vue-i18n'
 
 const props = withDefaults(defineProps<SidebarProps>(), {
   collapsible: 'icon',
@@ -22,35 +24,36 @@ const props = withDefaults(defineProps<SidebarProps>(), {
 
 const route = useRoute()
 const router = useRouter()
+const { t } = useI18n({ useScope: 'global' })
 
-// Land management navigation data
-const data = {
-  user: {
-    name: 'Land Owner',
-    email: 'owner@landchain.com',
-    avatar: '/avatars/user.jpg',
-  },
-  navMain: [
-    {
-      title: 'My Land',
-      url: '/my-land',
-      icon: Home,
-      routeName: 'my-land',
-    },
-    {
-      title: 'Transfers',
-      url: '/transfers',
-      icon: FileText,
-      routeName: 'transfers',
-    },
-    {
-      title: 'Map',
-      url: '/map',
-      icon: MapIcon,
-      routeName: 'map',
-    },
-  ],
+// Static user data
+const userData = {
+  name: 'Land Owner',
+  email: 'owner@landchain.com',
+  avatar: '/avatars/user.jpg',
 }
+
+// Reactive navigation data that updates with language changes
+const navMain = computed(() => [
+  {
+    title: t('nav.my_land'),
+    url: '/my-land',
+    icon: Home,
+    routeName: 'my-land',
+  },
+  {
+    title: t('nav.transfers'),
+    url: '/transfers',
+    icon: FileText,
+    routeName: 'transfers',
+  },
+  {
+    title: t('nav.map_view'),
+    url: '/map',
+    icon: MapIcon,
+    routeName: 'map',
+  },
+])
 
 const isActiveRoute = (routeName: string) => {
   return route.name === routeName
@@ -87,7 +90,7 @@ const navigateTo = (url: string) => {
       <SidebarGroup>
         <SidebarGroupContent>
           <SidebarMenu>
-            <SidebarMenuItem v-for="item in data.navMain" :key="item.title">
+            <SidebarMenuItem v-for="item in navMain" :key="item.title">
               <SidebarMenuButton
                 :is-active="isActiveRoute(item.routeName)"
                 @click="navigateTo(item.url)"
@@ -102,7 +105,7 @@ const navigateTo = (url: string) => {
     </SidebarContent>
 
     <SidebarFooter>
-      <NavUser :user="data.user" />
+      <NavUser :user="userData" />
     </SidebarFooter>
   </Sidebar>
 </template>

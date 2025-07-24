@@ -1,0 +1,17 @@
+{
+  "locale": {
+    "en": "English",
+    "fr": "French"
+  },
+  "nav": {
+    "map_view": "Map",
+    "my_land": "My Land",
+    "transfers": "Transfers"
+  },
+  "buttons": {
+    "register_land": "Register New Land"
+  },
+  "titles": {
+    "my_reg": "My Registrations"
+  }
+}

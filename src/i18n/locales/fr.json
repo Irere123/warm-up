@@ -1,0 +1,17 @@
+{
+  "locale": {
+    "en": "Anglais",
+    "fr": "Francais"
+  },
+  "nav": {
+    "map_view": "Carte",
+    "my_land": "Terre",
+    "transfers": "Transferts"
+  },
+  "buttons": {
+    "register_land": "Enregistrer terrain"
+  },
+  "titles": {
+    "my_reg": "Mes inscriptions"
+  }
+}

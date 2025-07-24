@@ -7,6 +7,7 @@ import OpenLayersMap, { type Vue3OpenlayersGlobalOptions } from 'vue3-openlayers
 
 import App from './App.vue'
 import router from './router'
+import i18n from './i18n'
 
 const app = createApp(App)
 
@@ -19,5 +20,6 @@ const options: Vue3OpenlayersGlobalOptions = {
 }
 
 app.use(OpenLayersMap, options)
+app.use(i18n)
 
 app.mount('#app')
